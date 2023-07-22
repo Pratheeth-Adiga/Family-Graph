@@ -20,7 +20,7 @@ This software is helps to create a graphical sturcture of a family which don't u
 - If there is no apoc.conf file create one 
 - Run the following Queries in Neo4j Browser
   - CALL apoc.trigger.add('assign-uuid', 'MATCH (node:Person) WHERE node.uuid IS NULL SET node.uuid = apoc.create.uuid()', {phase: "before"})
-  - CALL apoc.trigger.add('rel-assign-uuid', 'MATCH () - [r:%] -> () WHERE r.uuid IS NULL SET r.uuid = apoc.create.uuid()', {phase: "before"})
+  - CALL apoc.trigger.add('rel-assign-uuid', 'MATCH () - [r:Relation] -> () WHERE r.uuid IS NULL SET r.uuid = apoc.create.uuid()', {phase: "before"})
 - Run edit.html
 
 ---
