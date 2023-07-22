@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Graph</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="https://unpkg.com/neo4j-driver"></script>
+
+</head>
+<body>
+  <div id="node-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Node Details</h5>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="input-group mb-2">
+            <span class="input-group-text">Name</span>
+            <input type="text" class="form-control" id="node-name" placeholder="Adiga" value="">
+          </div>
+
+          <div class="input-group mb-2">
+            <span class="input-group-text">Birth Year</span>
+            <input type="text" class="form-control" id="node-birth-year" placeholder="2000" value="">
+          </div>
+
+          <div class="input-group mb-2">
+            <span class="input-group-text">Location</span>
+            <input type="text" class="form-control" id="node-location" placeholder="Bengaluru" value="">
+          </div>
+
+          <div class="input-group mb-2">
+            <span class="input-group-text">Phone Number</span>
+            <input type="text" class="form-control" id="node-phone" placeholder="9876543210" value="">
+          </div>
+
+          <div class="input-group mb-2">
+            <span class="input-group-text">Description</span>
+            <textarea class="form-control" id="node-description"></textarea>
+          </div>
+
+          <label class="container">Gender</label>
+          <div class="row align-items-start mb-2">
+          <div class="form-check col-2 ms-3">
+            <input class="form-check-input" type="radio" name="node-gender" id="node-gender-m" checked>
+            <label class="form-check-label">
+              Male
+            </label>
+          </div>
+          <div class="form-check col-2">
+            <input class="form-check-input" type="radio" name="node-gender" id="node-gender-f">
+            <label class="form-check-label">
+              Female
+            </label>
+          </div>
+          </div>
+
+          <label class="container">Alive</label>
+          <div class="row align-items-start mb-2">
+          <div class="form-check col-2 ms-3">
+            <input class="form-check-input" type="radio" name="node-alive" id="node-alive-y" checked>
+            <label class="form-check-label" for="flexRadioDefault1">
+              Yes
+            </label>
+          </div>
+          <div class="form-check col-2">
+            <input class="form-check-input" type="radio" name="node-alive" id="node-alive-n">
+            <label class="form-check-label" for="flexRadioDefault2">
+              No
+            </label>
+          </div>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-node">Save changes</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="edge-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edge Details</h5>
+        </div>
+
+        <div class="modal-body">
+
+          <div class="input-group mb-3">
+            <label class="input-group-text">Relation</label>
+            <select class="form-select" id="edge-select">
+              <option selected>Choose...</option>
+              <option value="0">Father</option>
+              <option value="1">Mother</option>
+              <option value="2">Brother</option>
+              <option value="3">Sister</option>
+              <option value="4">Son</option>
+              <option value="5">Daughter</option>
+              <option value="6">Husband</option>
+              <option value="7">Wife</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="save-edge">Save changes</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-node-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Node?</h5>
+        </div>
+
+        <div class="modal-body">
+
+        <p>Are you sure that you want to delete this node?</p>
+        <p class="alert alert-danger" role="alert">All the edges associated with the node will be deleted</p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="delete-node">Delete Node</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="delete-edge-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Edge</h5>
+        </div>
+
+        <div class="modal-body">
+
+        <p class="alert alert-danger" role="alert">
+          Are you sure you want to delete the edge?
+        </p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="delete-edge">Delete Edge</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="mynetwork" style="height: 98vh; width: auto; border: 2px solid black; margin: 5px;"></div>
+
+<script src="edit.js"></script>
+</body>
+</html>
