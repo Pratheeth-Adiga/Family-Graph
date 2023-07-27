@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Graph</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+<script src="https://unpkg.com/neo4j-driver"></script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="/index.html">Family Graph</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="./edit.html">Edit Graph</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="./related.html">Relation</a>
+              </li>
+          </div>
+        </div>
+      </nav>
+
+    <div id="mynetworkindex" style="height: 70vh; width: 80% ; border: 2px solid black; margin: 5px;">
+    </div>
+
+    <input class="form-control" type="text" placeholder="from node" id="from-text" disabled>
+    <input class="form-control" type="text" placeholder="to node" id="to-text" disabled>
+    <button class="btn btn-success" type="button" id="from-button">From</button>
+    <button class="btn btn-success" type="button" id="to-button">To</button>
+    <button class="btn btn-primary" type="button" id="evaluate">Eval</button>
+    <p>Relation:</p>
+    <input class="form-control" type="text" placeholder="relation" id="Relation" disabled>
+
+    <script src="./related.js"></script>
+</body>

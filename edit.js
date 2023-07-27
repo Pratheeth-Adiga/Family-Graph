@@ -33,7 +33,6 @@ session.run(relationQuery)
         data.nodes.push({ 
           id: person2.uuid, 
           label: person2.name, 
-          title: "",
         });
       }
       
@@ -67,12 +66,9 @@ session.run(relationQuery)
         },
         width: 1,
         shadow: true,
-        length: 30,
+        length: 300,
       },
       layout:{
-        // hierarchical:{
-        //   enabled: true,
-        // },
         randomSeed: 7,
       },
       interaction:{
@@ -83,8 +79,7 @@ session.run(relationQuery)
         navigationButtons: true,
       },
       physics:{
-        // solver: "hierarchicalRepulsion",
-        enabled: false,
+        enabled: true,
       },
 
       manipulation: {
@@ -119,23 +114,16 @@ session.run(relationQuery)
         addEdge: function (edgeData, callback) {
           getEdgeData().then(function (relation) {
             edgeData.label = relation;
-            const tx = session.beginTransaction();
-            tx.run(
-              'MATCH (p:Person) WHERE p.uuid = $from MATCH (n:Person) WHERE n.uuid = $to CREATE (p) - [:Relation {name:$relation}] -> (n);',
-              {from: edgeData.from, to: edgeData.to, relation: relation}
-            ).then(function () {
-              callback(edgeData);
-              tx.commit();
-              // window.location.reload();
-            }).catch(function (error) {
-              console.error(error);
-              tx.rollback();
-            }).then(function () {
-              tx.close();
-            });
-            console.log(typeof (edgeData.from) + "\n" + typeof (relation) + "\n" + edgeData.to);
-          });
-        },
+            addFirstEdge(edgeData, relation).then((result) => {
+              if(document.getElementById("double-edge").checked){
+                getSecondRelation(edgeData.from, relation).then(function(second_rel){
+                  addSecondEdge(edgeData.to,edgeData.from,second_rel);
+                });
+              }
+            callback(result);
+            })
+        });
+      },
 
         editNode: function (data, callback) {
           getnode(data).then( function(nodedata){
@@ -203,13 +191,13 @@ session.run(relationQuery)
                 ).then(function () {
                   callback(data);
                   tx.commit();
-                  window.location.reload();
                 }).catch(function (error) {
                   console.error(error);
                   tx.rollback();
                 }).then(function () {
                   tx.close();
                 });
+              window.location.reload();
             }
           })
           callback(nodeData);
@@ -225,13 +213,13 @@ session.run(relationQuery)
                 ).then(function () {
                   callback(edgeData);
                   tx.commit();
-                  window.location.reload();
                 }).catch(function (error) {
                   console.error(error);
                   tx.rollback();
                 }).then(function () {
                   tx.close();
                 });
+                window.location.reload();
             }
           }) 
           callback(edgeData);         
@@ -369,18 +357,101 @@ function DeleteEdgeData(){
 function getnode(data){
   return new Promise((resolve, reject) => {
     let node = [];
-    session.run('MATCH (n) WHERE n.uuid = $uuid RETURN n;', {uuid: data.id})
+    const tx = session.beginTransaction();
+    tx.run('MATCH (n) WHERE n.uuid = $uuid RETURN n;', {uuid: data.id})
     .then((result) => {
       result.records.forEach((record) => {
         node.push(record.get('n').properties);
       });
-      resolve(node[0]);
+      tx.commit();
     })
     .catch((error)=>{
+      tx.rollack()
       console.error(error);
       reject(error);
+    })
+    .then(() => {
+      tx.close();
+      resolve(node[0]);
     });
   });
+}
+
+function getSecondRelation(from, relation){
+  const fromn = {id:from};
+  let temp;
+  return new Promise((resolve, reject) => {
+    getnode(fromn).then(
+      function(data){
+        let a = {"Father" : 0,"Mother" : 1,"Brother" : 2,"Sister" : 3,"Son" : 4,"Daughter" : 5,"Husband" : 6,"Wife" : 7};
+        if(data.gender == "Female"){
+          switch(a[relation]){
+            case 0: temp = "Daughter"; 
+            case 1: temp = "Daughter"; 
+            case 2: temp = "Sister"; 
+            case 3: temp = "Sister"; 
+            case 4: temp = "Mother"; 
+            case 5: temp = "Mother";
+            case 6: temp = "Wife";
+            case 7: temp = "Undefined";
+            default: temp = "Undefined";
+          }
+        }
+        else{
+          switch(a[relation]){
+            case 0: temp = "Son"; 
+            case 1: temp = "Son"; 
+            case 2: temp = "Brother"; 
+            case 3: temp = "Brother"; 
+            case 4: temp = "Father"; 
+            case 5: temp = "Father";
+            case 6: temp = "Undefined";
+            case 7: temp = "Wife";
+            default: temp = "Undefined";
+          }
+        }
+      }
+    );
+    resolve(temp);
+    reject(console.error());
+  })
+}
+
+function addFirstEdge(edgeData, relation){
+  return new Promise((resolve, reject) => {
+    const tx = session.beginTransaction();
+    tx.run(
+      'MATCH (p:Person) WHERE p.uuid = $from MATCH (n:Person) WHERE n.uuid = $to CREATE (p) - [:Relation {name:$relation}] -> (n);',
+      {from: edgeData.from, to: edgeData.to, relation: relation},
+    ).then(function () {
+      tx.commit();
+      // window.location.reload();
+    }).catch(function (error) {
+      reject(console.error(error));
+      tx.rollback();
+    }).then(function () {
+      tx.close();
+      resolve(edgeData);
+    });
+  })
+}
+
+function addSecondEdge(fromNodeId, toNodeId, relation) {
+  return new Promise((resolve,reject) => {
+    const tx = session.beginTransaction();
+      tx.run(
+        'MATCH (p:Person) WHERE p.uuid = $from MATCH (n:Person) WHERE n.uuid = $to CREATE (p) - [:Relation {name:$relation}] -> (n);',
+        {from: fromNodeId, to: toNodeId, relation: relation}
+      ).then(function () {
+        tx.commit();
+      }).catch(function (error) {
+        reject(console.error(error));
+        tx.rollback();
+      }).then(function () {
+        tx.close();
+        resolve(0);
+      });
+  })
 }
 
 draw();
