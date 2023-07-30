@@ -16,12 +16,22 @@ This software is helps to create a graphical sturcture of a family which don't u
 ---
 ### Instructions to Run
 
-- Enable apoc.trigger.enabled=true in $NEO4J_HOME/conf/apoc.conf first.
-- If there is no apoc.conf file create one 
+- Enable apoc.trigger.enabled = true and apoc.uuid.enable = true in $NEO4J_HOME/conf/apoc.conf if the file doesn't exist create one.
+- Install APOC plugins on the desired databases in Neo4j Desktop.
 - Run the following Queries in Neo4j Browser
   - CALL apoc.trigger.add('assign-uuid', 'MATCH (node:Person) WHERE node.uuid IS NULL SET node.uuid = apoc.create.uuid()', {phase: "before"})
   - CALL apoc.trigger.add('rel-assign-uuid', 'MATCH () - [r:Relation] -> () WHERE r.uuid IS NULL SET r.uuid = apoc.create.uuid()', {phase: "before"})
-- Run edit.html
+- Change the password to the one given to the database and browser url to what the neo4j browser opens on (by default it is set to localhost:7687)
+- Run index.html (start the database before running this).
+
+---
+### Features
+- It has 3 pages first one to just see the graph, second one to edit it and third page to see the relation between two nodes.
+- You can add, edit and delete edges and nodes in edit page.
+- You get the information about the node by hovering on it.
+- By default node collects name, date of birth, location, phone number, gender as inputs which can be modified in edit.js.
+- Edge by default only collects only relationship which can also be changeed in edit.js.
+- You can see the relation between two nodes in the third page.
 
 ---
 
