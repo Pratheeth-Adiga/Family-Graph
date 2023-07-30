@@ -115,6 +115,13 @@ const Neo4jDriver = neo4j.driver(
 
     let arr = [];
 
+    document.getElementById("swap").onclick = function(){
+      [fromnode,tonode] = [tonode,fromnode];
+      console.log(fromnode);
+      document.getElementById("from-text").value = fromnode.label;
+      document.getElementById("to-text").value = tonode.label;
+    }
+
     document.getElementById("evaluate").onclick = async function () {
       if (fromnode === undefined || tonode === undefined)
         console.log("undefined");
@@ -135,6 +142,7 @@ const Neo4jDriver = neo4j.driver(
                 string = string + arr[i] + " -> ";
             }
             document.getElementById("Relation").value = string;
+            arr = [];
             console.log(arr);
           })
         } catch (error) {

@@ -117,6 +117,7 @@ session.run(relationQuery)
             addFirstEdge(edgeData, relation).then((result) => {
               if(document.getElementById("double-edge").checked){
                 getSecondRelation(edgeData.from, relation).then(function(second_rel){
+                  console.log(second_rel);
                   addSecondEdge(edgeData.to,edgeData.from,second_rel);
                 });
               }
@@ -196,11 +197,11 @@ session.run(relationQuery)
                   tx.rollback();
                 }).then(function () {
                   tx.close();
+                  callback(nodeData);
+                  window.location.reload();
                 });
-              window.location.reload();
             }
           })
-          callback(nodeData);
         },
 
         deleteEdge: function(edgeData,callback){
@@ -218,11 +219,11 @@ session.run(relationQuery)
                   tx.rollback();
                 }).then(function () {
                   tx.close();
+                  callback(edgeData);
+                  window.location.reload();
                 });
-                window.location.reload();
             }
-          }) 
-          callback(edgeData);         
+          })          
         },
       },
     };
@@ -377,44 +378,51 @@ function getnode(data){
   });
 }
 
-function getSecondRelation(from, relation){
+function getSecondRelation(from,relation){
   const fromn = {id:from};
-  let temp;
-  return new Promise((resolve, reject) => {
-    getnode(fromn).then(
-      function(data){
-        let a = {"Father" : 0,"Mother" : 1,"Brother" : 2,"Sister" : 3,"Son" : 4,"Daughter" : 5,"Husband" : 6,"Wife" : 7};
+  let a = {"Father" : 0,"Mother" : 1,"Brother" : 2,"Sister" : 3,"Son" : 4,"Daughter" : 5,"Husband" : 6,"Wife" : 7};
+   return getnode(fromn).then((data) => {
         if(data.gender == "Female"){
           switch(a[relation]){
-            case 0: temp = "Daughter"; 
-            case 1: temp = "Daughter"; 
-            case 2: temp = "Sister"; 
-            case 3: temp = "Sister"; 
-            case 4: temp = "Mother"; 
-            case 5: temp = "Mother";
-            case 6: temp = "Wife";
-            case 7: temp = "Undefined";
-            default: temp = "Undefined";
+            case 0: 
+            case 1:
+              temp = "Daughter"; 
+              break;
+            case 2: 
+            case 3:
+              temp = "Sister"; 
+              break;
+            case 4: 
+            case 5:
+              temp = "Mother";
+              break; 
+            case 6: 
+              temp = "Wife";
+              break;
+            default: console.log("Relation Out of Bounds or Undefined");
           }
         }
         else{
           switch(a[relation]){
-            case 0: temp = "Son"; 
-            case 1: temp = "Son"; 
-            case 2: temp = "Brother"; 
-            case 3: temp = "Brother"; 
-            case 4: temp = "Father"; 
-            case 5: temp = "Father";
-            case 6: temp = "Undefined";
+            case 0: 
+            case 1:
+              temp = "Son";
+              break;  
+            case 2: 
+            case 3:
+              temp = "Brother"; 
+              break;
+            case 4:
+            case 5: 
+              temp = "Father"; 
+              break;
             case 7: temp = "Wife";
-            default: temp = "Undefined";
+            default: console.log("Relation Out of Bounds or Undefined");
           }
         }
+        return temp;
       }
     );
-    resolve(temp);
-    reject(console.error());
-  })
 }
 
 function addFirstEdge(edgeData, relation){
@@ -438,17 +446,19 @@ function addFirstEdge(edgeData, relation){
 
 function addSecondEdge(fromNodeId, toNodeId, relation) {
   return new Promise((resolve,reject) => {
-    const tx = session.beginTransaction();
+    const session1 = Neo4jDriver.session();
+    const tx = session1.beginTransaction();
       tx.run(
         'MATCH (p:Person) WHERE p.uuid = $from MATCH (n:Person) WHERE n.uuid = $to CREATE (p) - [:Relation {name:$relation}] -> (n);',
         {from: fromNodeId, to: toNodeId, relation: relation}
       ).then(function () {
         tx.commit();
       }).catch(function (error) {
-        reject(console.error(error));
         tx.rollback();
+        reject(console.error(error));
       }).then(function () {
         tx.close();
+        // session1.close();
         resolve(0);
       });
   })

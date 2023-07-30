@@ -43,7 +43,7 @@ const Neo4jDriver = neo4j.driver(
           from: person1.uuid,
           to: person2.uuid,
           label: relation.name,
-          title: "",
+          // title: "",
           arrows: 'to',
         });
       });
@@ -53,41 +53,50 @@ const Neo4jDriver = neo4j.driver(
     .then((result) => {
       result.records.forEach((record) => {
         const person = record.get('p').properties;
-        data.nodes.push({ id: person.uuid, label: person.name});
+        data.nodes.push({ 
+          id: person.uuid, 
+          label: person.name,
+          title: getTitle(person),
+        });
       });
   
       options = {
-        nodes: {
-          borderWidth: 1,
-          shadow: true,
-        },
-        edges: {
-          arrows:{
-            to:{
-              enabled: true,
-            }
-          },
-          width: 1,
-          shadow: true,
-          length: 30,
-        },
-        layout:{
-          // hierarchical:{
-          //   enabled: true,
-          // },
-          randomSeed: 7,
-        },
-        interaction:{
-          hover: true,
-        //   keyboard:{
-        //     enabled: true,
-        //   },
-        //   navigationButtons: true,
-        },
-        physics:{
-          // solver: "hierarchicalRepulsion",
+        manipulation:{
           enabled: false,
+      },
+      nodes: {
+        borderWidth: 1,
+        shadow: true,
+      },
+      edges: {
+        arrows:{
+          to:{
+            enabled: true,
+          }
         },
+        smooth:{
+          forceDirection: "none",
+        },
+        width: 1,
+        shadow: true,
+        length: 300,
+      },
+      layout:{
+        randomSeed: 7,
+      },
+      interaction:{
+        hover: true,
+        keyboard:{
+          enabled: true,
+        },
+        navigationButtons: true,
+      },
+      physics:{
+        enabled: true,
+        barnesHut:{
+          // springConstant: 0,
+        },
+      },
       };
   
     const container = document.getElementById("mynetworkindex");
